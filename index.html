@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>礼物领取</title>
+</head>
+<body>
+
+<h1>🎁 领取你的礼物</h1>
+
+<button onclick="claim()">点击领取</button>
+
+<div id="result"></div>
+
+<script>
+
+const SUPABASE_URL = "https://tdyfoxxyskcnroptvkgz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_M8XZyErs-q4md0wuS3gZIA_BPjUtPzf";
+
+async function claim() {
+
+  // 找一条未领取礼物
+  let res = await fetch(
+    `${SUPABASE_URL}/rest/v1/gifts?claimed=eq.false&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`
+      }
+    }
+  );
+
+  let data = await res.json();
+
+  if (data.length === 0) {
+    document.getElementById("result").innerHTML = "已领完";
+    return;
+  }
+
+  let gift = data[0];
+
+  // 标记已领取
+  await fetch(
+    `${SUPABASE_URL}/rest/v1/gifts?id=eq.${gift.id}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`
+      },
+      body: JSON.stringify({ claimed: true })
+    }
+  );
+
+  // 显示结果
+  document.getElementById("result").innerHTML =
+    `<img src="${gift.image_url}" width="300"><p>${gift.content}</p>`;
+}
+
+</script>
+
+</body>
+</html>
